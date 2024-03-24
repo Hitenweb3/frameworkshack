@@ -56,7 +56,7 @@ app.frame('/trendingdata', async (c) => {
   const { deriveState } = c
 
   const state = deriveState(previousState => {
-    previousState.channels = channelistres.channels.slice(0, 15).map(channel => channel.channel.name);
+    previousState.channels = channelistres.channels.slice(0, 10).map(channel => channel.channel.name);
   });
 
 
