@@ -63,7 +63,7 @@ app.frame('/trendingdata', async (c) => {
   return c.res({
     image: (
       <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 30 }}>
-        <h2>Trending Channels</h2>
+        <h2>Trending Channels: Top 10</h2>
         {state.channels.map((item, index) => (
           <div key={index}>{`${index + 1}. ${item}`}</div>  
         ))}
@@ -137,9 +137,9 @@ fetch(`https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=cha
           </div>
         ),
         intents: [
-          <Button action="/stats" value={buttonValue}>Stats</Button>,
-          <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
-          <Button action="/trendingdata" value="Trending">Trending</Button>,
+          <Button action="/stats" value={selectedChannel}>Stats</Button>,
+          <Button action="/recentcasts" value={selectedChannel}>Casts</Button>,
+          <Button action="/trendingdata" value="Trending">Channels</Button>,
           <Button.Reset>Reset</Button.Reset>
         ]
       });
@@ -158,9 +158,8 @@ app.frame('/stats', (c) => {
       </div>
     ),
     intents: [
-      <Button action="/summary" value={buttonValue}>Summary</Button>,
       <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
-      <Button action="/trendingdata" value="Trending">Trending</Button>,
+      <Button action="/trendingdata" value="Trending">Trending Channels</Button>,
       <Button.Reset>Reset</Button.Reset>
     ]
   })
@@ -168,18 +167,38 @@ app.frame('/stats', (c) => {
 
 
 // Frame to display casts 
-app.frame('/recentcasts', (c) => { 
-  const { buttonValue } = c
+app.frame('/recentcasts', async (c) => { 
+  const {buttonValue, deriveState} = c
+
+  console.log("button", buttonValue)
+
+  const responsecasts = await fetch(`https://api.neynar.com/v2/farcaster/feed/channels?channel_ids=${buttonValue}&with_recasts=false&with_replies=false&limit=5`, {
+    method: 'GET',
+    headers: {
+      'accept': 'application/json',
+      'api_key': 'C0E4D0E1-A9E4-40B7-B5CE-2CFA9FF4CE1F'
+    }
+  })
+
+  const castlistres = await responsecasts.json()
+  
+  const state = deriveState(previousState => {
+      previousState.casts = castlistres.casts.map(cast => cast.text);
+    });
+  
+
   return c.res({
     image: (
-      <div style={{ color: 'black', display: 'flex', fontSize: 60 }}>
+      <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 25}}>
         Casts: {buttonValue}
+        {state.casts.map((item, index) => (
+          <div key={index}>{`${index + 1}. ${item}`}</div>  
+        ))}
       </div>
     ),
     intents: [
-      <Button action="/summary" value={buttonValue}>Summary</Button>,
       <Button action="/stats" value={buttonValue}>Stats</Button>,
-      <Button action="/trendingdata" value="Trending">Trending</Button>,
+      <Button action="/trendingdata" value="Trending">Trending Channels</Button>,
       <Button.Reset>Reset</Button.Reset>
     ]
   })
