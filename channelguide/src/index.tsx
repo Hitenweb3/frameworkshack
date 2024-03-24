@@ -1,5 +1,5 @@
 import { serveStatic } from '@hono/node-server/serve-static'
-import { Button, Frog } from 'frog'
+import { Button, Frog, TextInput } from 'frog'
 import { devtools } from 'frog/dev'
 
 type State = {
@@ -11,9 +11,9 @@ type State = {
  
 export const app = new Frog<{ State: State }>({
   initialState: {
-    channels: ["Base", "Degen", "Founders"],
+    channels: [],
     data: ["100", "200", "300"],
-    casts: ["yolo", "FC", "WAGMI"]
+    casts: []
   }
 })
 
@@ -52,25 +52,31 @@ app.frame('/trendingdata', async (c) => {
     }
   })
   const channelistres = await response.json()
-  console.log(channelistres)
+
   const { deriveState } = c
+
   const state = deriveState(previousState => {
-    previousState.channels
-  })
+    previousState.channels = channelistres.channels.slice(0, 11).map(channel => channel.channel.name);
+  });
+
+
+  console.log(state)
 
   return c.res({
     image: (
-      <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 40 }}>
+      <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 30 }}>
         <h2>Trending Channels</h2>
-        {channelistres.channels.slice(0, 5).map((item, index) => (
-          <div key={index}>{`${index + 1}. ${JSON.stringify(item.channel.name)}`}</div>  
+        {state.channels.map((item, index) => (
+          <div key={index}>{`${index + 1}. ${item}`}</div>  
         ))}
       </div>
     ),
     intents: [
-      <Button action="/summary" value={state.channels[0]}>1</Button>,
-      <Button action="/summary" value={state.channels[1]}>2</Button>,
-      <Button action="/summary" value={state.channels[2]}>3</Button>,
+      // <Button action="/summary" value={state.channels[0]}>1</Button>,
+      // <Button action="/summary" value={state.channels[1]}>2</Button>,
+      // <Button action="/summary" value={state.channels[2]}>3</Button>,
+      <TextInput placeholder="Enter the channel #" />,
+      <Button action="/summary" value={c.inputText}>Submit</Button>,
       <Button.Reset>Reset</Button.Reset>
     ]
   })
@@ -78,18 +84,63 @@ app.frame('/trendingdata', async (c) => {
 
 
 
+
 // Frame to display summmary 
-app.frame('/summary', (c) => { 
-  const { buttonValue } = c
+app.frame('/summary', async (c) => { 
+  const {buttonValue, deriveState} = c
+ 
+  let selectedChannel = '';
+  deriveState(previousState => {
+    selectedChannel = previousState.channels[parseInt(c.inputText || '0') - 1];
+  });
+
+  let coherecastsummary = '';
+
+fetch(`https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=channel_id&channel_id=${selectedChannel}&with_recasts=false&limit=10`, {
+    method: 'GET',
+    headers: {
+      'accept': 'application/json',
+      'api_key': 'C0E4D0E1-A9E4-40B7-B5CE-2CFA9FF4CE1F'
+    }
+  })
+  .then(response => response.json())
+  .then(neynarData => {
+    const paragraph = neynarData.casts.map((cast: any) => cast.text).join(' ');
+
+    const cohereData = {
+      text: paragraph
+    };
+
+    console.log("para", cohereData)
+
+    return fetch('https://api.cohere.ai/v1/summarize', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'Authorization': 'Bearer 44LY7lECooRDxdN8F8LI0o8TzuiVhnlYLl0sXfZW'
+      },
+      body: JSON.stringify(cohereData)
+    });
+  })
+  .then(cohereResponse => cohereResponse.json())
+  .then(cohereResult => {
+    console.log("summary", cohereResult.summary);
+    coherecastsummary = cohereResult.summary;
+  })
+  .catch(error => console.error('Error:', error));
+
+
   return c.res({
     image: (
-      <div style={{ color: 'black', display: 'flex', fontSize: 60 }}>
-        Summary: {buttonValue}
+      <div style={{ color: 'black', display: 'flex', fontSize: 25}}>
+        Summary: {coherecastsummary}
       </div>
     ),
     intents: [
       <Button action="/stats" value={buttonValue}>Stats</Button>,
       <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
+      <Button action="/trendingdata" value="Trending">Trending</Button>,
       <Button.Reset>Reset</Button.Reset>
     ]
   })
@@ -108,6 +159,7 @@ app.frame('/stats', (c) => {
     intents: [
       <Button action="/summary" value={buttonValue}>Summary</Button>,
       <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
+      <Button action="/trendingdata" value="Trending">Trending</Button>,
       <Button.Reset>Reset</Button.Reset>
     ]
   })
@@ -126,6 +178,7 @@ app.frame('/recentcasts', (c) => {
     intents: [
       <Button action="/summary" value={buttonValue}>Summary</Button>,
       <Button action="/stats" value={buttonValue}>Stats</Button>,
+      <Button action="/trendingdata" value="Trending">Trending</Button>,
       <Button.Reset>Reset</Button.Reset>
     ]
   })
@@ -273,3 +326,57 @@ devtools(app, { serveStatic })
 //     ],
 //   })
 // })
+
+// const cohereData = {
+    //   model: "command-light",
+    //   prompt: `Summarize: ${paragraph}`,
+    //   message: paragraph,
+    //   temperature: 0.3,
+    //   prompt_truncation: "AUTO",
+    //   stream: true,
+    //   citation_quality: "fast",
+    //   connectors: [],
+    //   documents: []
+    // };
+
+    // return fetch('https://api.cohere.ai/v1/chat', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Authorization': 'Bearer 44LY7lECooRDxdN8F8LI0o8TzuiVhnlYLl0sXfZW',
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify(cohereData)
+    // });
+
+  // const response = await fetch(`https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=channel_id&channel_id=${buttonValue}&with_recasts=false&limit=25`, {
+  //   method: 'GET',
+  //   headers: {
+  //     'accept': 'application/json',
+  //     'api_key': 'C0E4D0E1-A9E4-40B7-B5CE-2CFA9FF4CE1F'
+  //   }
+  // })
+
+  // const paragraph = (await response.json()).casts.map(cast => cast.text).join(' ');
+
+  // const cohereData = {
+  //   model: "command-light",
+  //   message: paragraph,
+  //   temperature: 0.3,
+  //   prompt_truncation: "AUTO",
+  //   stream: true,
+  //   citation_quality: "fast",
+  //   connectors: [],
+  //   documents: []
+  // };
+
+  // const cohereResponse = await fetch('https://api.cohere.ai/v1/chat', {
+  //   method: 'POST',
+  //   headers: {
+  //     'Authorization': 'Bearer 44LY7lECooRDxdN8F8LI0o8TzuiVhnlYLl0sXfZW',
+  //     'Content-Type': 'application/json'
+  //   },
+  //   body: JSON.stringify(cohereData)
+  // });
+
+  // const cohereResult = await cohereResponse.json();
+  // console.log(cohereResult);
