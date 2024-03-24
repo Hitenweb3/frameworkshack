@@ -151,6 +151,24 @@ fetch(`https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=cha
 // Frame to display data 
 app.frame('/stats', (c) => { 
   const { buttonValue } = c
+
+  const api_key = 'DGtIJu2uo3eQpwotNiGq0toTXnPramR2';
+
+
+  fetch("https://api.dune.com/api/v1/query/3418331/results?&filters=channel=", {
+    method: 'GET',
+    headers: {
+      'X-Dune-API-Key': api_key
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Process the fetched data here
+    console.log(data);
+  })
+  .catch(error => console.error('Error fetching data:', error));
+
+  
   return c.res({
     image: (
       <div style={{ color: 'black', display: 'flex', fontSize: 60 }}>
