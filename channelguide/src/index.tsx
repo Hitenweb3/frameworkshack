@@ -12,7 +12,7 @@ type State = {
 export const app = new Frog<{ State: State }>({
   initialState: {
     channels: [],
-    data: ["100", "200", "300"],
+    data: [],
     casts: []
   }
 })
@@ -148,47 +148,126 @@ fetch(`https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=cha
 })
 
 
-// Frame to display data 
-app.frame('/stats', (c) => { 
-  const { buttonValue } = c
+//lets try this 
+app.frame('/stats', async (c) => { 
+  const {buttonValue} = c
 
   const api_key = 'DGtIJu2uo3eQpwotNiGq0toTXnPramR2';
 
+  let searchchannel = buttonValue?.toLowerCase();
+  let tabledata: any = {};
 
-  fetch("https://api.dune.com/api/v1/query/3418331/results?&filters=channel=", {
-    method: 'GET',
-    headers: {
-      'X-Dune-API-Key': api_key
-    }
-  })
-  .then(response => response.json())
-  .then(data => {
-    // Process the fetched data here
-    console.log(data);
-  })
-  .catch(error => console.error('Error fetching data:', error));
+  return new Promise((resolve) => {    
+    setTimeout(async () => {
+      const statsforchannel = await fetch(`https://api.dune.com/api/v1/query/3418331/results?&filters=channel=${searchchannel}`, {
+        method: 'GET',
+        headers: {
+          'X-Dune-API-Key': api_key
+        }
+      });
 
+      const statssaved = await statsforchannel.json();
+      tabledata = statssaved.result.rows[0];
+
+      resolve(void 0);
+    }, 3000); 
+  }).then(() => {
+    return c.res({
+      image: (
+        <div style={{ display: 'flex'}}>
+          <h3>Stats for {tabledata.channel}</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <table style={{ color: 'black', fontSize: 20 }}>
+              <tr>
+                <td style={{ fontSize: 24, color: 'blue' }}>Active Users:</td>
+                <td style={{ fontSize: 24, color: 'green' }}>{tabledata.active_user}</td>
+              </tr>
+              <tr>
+                <td style={{ fontSize: 24, color: 'blue' }}>Bots:</td>
+                <td style={{ fontSize: 24, color: 'green' }}>{tabledata.active_npc}</td>
+              </tr>
+              <tr>
+                <td style={{ fontSize: 24, color: 'blue' }}>Txn Volume:</td>
+                <td style={{ fontSize: 24, color: 'green' }}>{tabledata.avg_volume_usd}</td>
+              </tr>
+              <tr>
+                <td style={{ fontSize: 24, color: 'blue' }}>Top Casters:</td>
+                <td style={{ fontSize: 24, color: 'green' }}>{tabledata.top_casters}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      ),
+      intents: [
+              <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
+              <Button action="/trendingdata" value="Trending">Trending Channels</Button>,
+              <Button.Reset>Reset</Button.Reset>
+            ]
+    });
+  });
+});
+
+
+
+// // // Frame to display data 
+// app.frame('/stats', async (c) => { 
+//   const {buttonValue} = c
+
+//   const api_key = 'DGtIJu2uo3eQpwotNiGq0toTXnPramR2';
+
+//   let searchchannel = "base";
+//   let tabledata: any = {};
+
+//   const statsforchannel = await fetch(`https://api.dune.com/api/v1/query/3418331/results?&filters=channel=${searchchannel}`, {
+//     method: 'GET',
+//     headers: {
+//       'X-Dune-API-Key': api_key
+//     }
+//   })
+
+//   const statssaved = await statsforchannel.json()
+
+//   tabledata = statssaved.result.rows[0];
+//   console.log("SATS", tabledata)
   
-  return c.res({
-    image: (
-      <div style={{ color: 'black', display: 'flex', fontSize: 60 }}>
-        Stats: {buttonValue}
-      </div>
-    ),
-    intents: [
-      <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
-      <Button action="/trendingdata" value="Trending">Trending Channels</Button>,
-      <Button.Reset>Reset</Button.Reset>
-    ]
-  })
-})
+//   return c.res({
+//     image: (
+//       <div>
+//         <h3>Stats for {tabledata.data.channel}</h3>
+//         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+//           <table style={{ color: 'black', fontSize: 20 }}>
+//             <tr>
+//               <td style={{ fontSize: 24, color: 'blue' }}>Active Users:</td>
+//               <td style={{ fontSize: 24, color: 'green' }}>{tabledata.data.active_user}</td>
+//             </tr>
+//             <tr>
+//               <td style={{ fontSize: 24, color: 'blue' }}>Bots:</td>
+//               <td style={{ fontSize: 24, color: 'green' }}>{tabledata.data.active_npc}</td>
+//             </tr>
+//             <tr>
+//               <td style={{ fontSize: 24, color: 'blue' }}>Txn Volume:</td>
+//               <td style={{ fontSize: 24, color: 'green' }}>{tabledata.data.avg_volume_usd}</td>
+//             </tr>
+//             <tr>
+//               <td style={{ fontSize: 24, color: 'blue' }}>Top Casters:</td>
+//               <td style={{ fontSize: 24, color: 'green' }}>{tabledata.data.top_casters}</td>
+//             </tr>
+//           </table>
+//         </div>
+//       </div>
+//     ),
+//     intents: [
+//       <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
+//       <Button action="/trendingdata" value="Trending">Trending Channels</Button>,
+//       <Button.Reset>Reset</Button.Reset>
+//     ]
+//   })
+// })
 
 
 // Frame to display casts 
 app.frame('/recentcasts', async (c) => { 
   const {buttonValue, deriveState} = c
-
-  console.log("button", buttonValue)
 
   const responsecasts = await fetch(`https://api.neynar.com/v2/farcaster/feed/channels?channel_ids=${buttonValue}&with_recasts=false&with_replies=false&limit=5`, {
     method: 'GET',
