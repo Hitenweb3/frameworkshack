@@ -80,7 +80,7 @@ app.frame('/trendingdata', async (c) => {
     ),
     intents: [
       <TextInput placeholder="Enter the channel #" />,
-      <Button action="/summary" value={c.inputText}>Submit</Button>,
+      <Button action="/summary" value={c.inputText}>Submit 😎</Button>,
       <Button.Reset>Reset</Button.Reset>
     ]
   })
@@ -140,15 +140,21 @@ fetch(`https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=cha
     }).then(() => {
       return c.res({
         image: (
-          <div style={{ color: 'black', display: 'flex', fontSize: 25 }}>
-            {coherecastsummary === '' || coherecastsummary === undefined ? 
-            'Unable to get data try another channel' : coherecastsummary}
-          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0f0f0', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', width: '100%', height: '100%' }}>
+              <div style={{ color: 'black', display: 'flex', fontSize: 30, textAlign: 'center', padding: '20px', border: '5px solid #ccc', borderRadius: '8px', maxWidth: '80%', lineHeight: '1.5' }}>
+                {coherecastsummary === '' || coherecastsummary === undefined ? 
+                'Unable to get data. Please try another channel.' : coherecastsummary}
+              </div>
+            </div>
+          // <div style={{ color: 'black', display: 'flex', fontSize: 25 }}>
+          //   {coherecastsummary === '' || coherecastsummary === undefined ? 
+          //   'Unable to get data try another channel' : coherecastsummary}
+          // </div>
         ),
         intents: [
-          <Button action="/stats" value={selectedChannel}>Stats</Button>,
-          <Button action="/recentcasts" value={selectedChannel}>Casts</Button>,
-          <Button action="/trendingdata" value="Trending">Channels</Button>,
+          <Button action="/stats" value={selectedChannel}>Stats 📊</Button>,
+          <Button action="/recentcasts" value={selectedChannel}>Casts 💬</Button>,
+          <Button action="/trendingdata" value="Trending">Channels 🎙️</Button>,
           <Button.Reset>Reset</Button.Reset>
         ]
       });
@@ -208,8 +214,8 @@ app.frame('/stats', async (c) => {
 
       ),
       intents: [
-              <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
-              <Button action="/trendingdata" value="Trending">Trending Channels</Button>,
+              <Button action="/recentcasts" value={buttonValue}>Casts 💬</Button>,
+              <Button action="/trendingdata" value="Trending">Channels 🎙️</Button>,
               <Button.Reset>Reset</Button.Reset>
             ]
     });
@@ -309,8 +315,8 @@ app.frame('/recentcasts', async (c) => {
       // </div>
     ),
     intents: [
-      <Button action="/stats" value={buttonValue}>Stats</Button>,
-      <Button action="/trendingdata" value="Trending">Trending Channels</Button>,
+      <Button action="/stats" value={buttonValue}>Stats 📊</Button>,
+      <Button action="/trendingdata" value="Trending">Channels 🎙️</Button>,
       <Button.Reset>Reset</Button.Reset>
     ]
   })
