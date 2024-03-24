@@ -38,7 +38,7 @@ app.frame('/', (c) => {
       </div>
     ),
     intents: [
-      <Button action="/trendingdata" value="LetsGo">Lets Go</Button>,
+      <Button action="/trendingdata" value="LetsGo">Lets Go ➡️</Button>,
     ]
   })
 })
@@ -168,35 +168,35 @@ app.frame('/stats', async (c) => {
 
       const statssaved = await statsforchannel.json();
       tabledata = statssaved.result.rows[0];
-
+      console.log(tabledata)
       resolve(void 0);
     }, 3000); 
   }).then(() => {
     return c.res({
+      
       image: (
-        <div style={{ display: 'flex'}}>
-          <h3>Stats for {tabledata.channel}</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <table style={{ color: 'black', fontSize: 20 }}>
-              <tr>
-                <td style={{ fontSize: 24, color: 'blue' }}>Active Users:</td>
-                <td style={{ fontSize: 24, color: 'green' }}>{tabledata.active_user}</td>
-              </tr>
-              <tr>
-                <td style={{ fontSize: 24, color: 'blue' }}>Bots:</td>
-                <td style={{ fontSize: 24, color: 'green' }}>{tabledata.active_npc}</td>
-              </tr>
-              <tr>
-                <td style={{ fontSize: 24, color: 'blue' }}>Txn Volume:</td>
-                <td style={{ fontSize: 24, color: 'green' }}>{tabledata.avg_volume_usd}</td>
-              </tr>
-              <tr>
-                <td style={{ fontSize: 24, color: 'blue' }}>Top Casters:</td>
-                <td style={{ fontSize: 24, color: 'green' }}>{tabledata.top_casters}</td>
-              </tr>
-            </table>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f0f0f0', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', width: '100%', height: '100%' }}>
+        <h3 style={{ marginBottom: '20px', fontFamily: 'Arial, sans-serif', fontSize: '50px', color: '#333' }}>📊 Stats for {tabledata.channel}</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', marginBottom: '10px' }}>
+            <span style={{ fontSize: '40px', color: '#007bff' }}>👥 Active Users:</span>
+            <span style={{ fontSize: '40px', color: '#28a745', marginLeft: '10px' }}>{tabledata.active_user}</span>
+          </div>
+          <div style={{ display: 'flex', marginBottom: '10px' }}>
+            <span style={{ fontSize: '40px', color: '#007bff' }}>🤖 Bots:</span>
+            <span style={{ fontSize: '40px', color: '#28a745', marginLeft: '10px' }}>{tabledata.active_npc}</span>
+          </div>
+          <div style={{ display: 'flex', marginBottom: '10px' }}>
+            <span style={{ fontSize: '40px', color: '#007bff' }}>💹 Txn Volume:</span>
+            <span style={{ fontSize: '40px', color: '#28a745', marginLeft: '10px' }}>${Number(tabledata.avg_volume_usd).toFixed(2)}</span>
+          </div>
+          <div style={{ display: 'flex', marginBottom: '10px' }}>
+            <span style={{ fontSize: '40px', color: '#007bff' }}>🌟 Top Casters:</span>
+            <span style={{ fontSize: '40px', color: '#28a745', marginLeft: '10px' }}>{tabledata.top_casters.join(', ')}</span>
           </div>
         </div>
+    </div>
+
       ),
       intents: [
               <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
