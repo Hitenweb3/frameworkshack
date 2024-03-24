@@ -56,11 +56,9 @@ app.frame('/trendingdata', async (c) => {
   const { deriveState } = c
 
   const state = deriveState(previousState => {
-    previousState.channels = channelistres.channels.slice(0, 11).map(channel => channel.channel.name);
+    previousState.channels = channelistres.channels.slice(0, 15).map(channel => channel.channel.name);
   });
 
-
-  console.log(state)
 
   return c.res({
     image: (
@@ -72,9 +70,6 @@ app.frame('/trendingdata', async (c) => {
       </div>
     ),
     intents: [
-      // <Button action="/summary" value={state.channels[0]}>1</Button>,
-      // <Button action="/summary" value={state.channels[1]}>2</Button>,
-      // <Button action="/summary" value={state.channels[2]}>3</Button>,
       <TextInput placeholder="Enter the channel #" />,
       <Button action="/summary" value={c.inputText}>Submit</Button>,
       <Button.Reset>Reset</Button.Reset>
@@ -111,8 +106,6 @@ fetch(`https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=cha
       text: paragraph
     };
 
-    console.log("para", cohereData)
-
     return fetch('https://api.cohere.ai/v1/summarize', {
       method: 'POST',
       headers: {
@@ -130,20 +123,28 @@ fetch(`https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=cha
   })
   .catch(error => console.error('Error:', error));
 
-
-  return c.res({
-    image: (
-      <div style={{ color: 'black', display: 'flex', fontSize: 25}}>
-        Summary: {coherecastsummary}
-      </div>
-    ),
-    intents: [
-      <Button action="/stats" value={buttonValue}>Stats</Button>,
-      <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
-      <Button action="/trendingdata" value="Trending">Trending</Button>,
-      <Button.Reset>Reset</Button.Reset>
-    ]
-  })
+  if (coherecastsummary === '') {
+    return new Promise((resolve) => {    
+      setTimeout(() => {
+      resolve(void 0);
+      }, 4000); 
+    }).then(() => {
+      return c.res({
+        image: (
+          <div style={{ color: 'black', display: 'flex', fontSize: 25 }}>
+            {coherecastsummary === '' || coherecastsummary === undefined ? 
+            'Unable to get data try another channel' : coherecastsummary}
+          </div>
+        ),
+        intents: [
+          <Button action="/stats" value={buttonValue}>Stats</Button>,
+          <Button action="/recentcasts" value={buttonValue}>Casts</Button>,
+          <Button action="/trendingdata" value="Trending">Trending</Button>,
+          <Button.Reset>Reset</Button.Reset>
+        ]
+      });
+    });
+  }
 })
 
 
