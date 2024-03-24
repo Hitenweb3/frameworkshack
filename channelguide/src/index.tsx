@@ -286,12 +286,18 @@ app.frame('/recentcasts', async (c) => {
 
   return c.res({
     image: (
-      <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 25}}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', background: '#f0f0f0', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', width: '100%', height: '100%', fontSize: '40px'}}>
         Casts: {buttonValue}
         {state.casts.map((item, index) => (
-          <div key={index}>{`${index + 1}. ${item}`}</div>  
+          <div key={index}>{`${index + 1}. ${item} `}</div>  
         ))}
       </div>
+      // <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 25}}>
+      //   Casts: {buttonValue}
+      //   {state.casts.map((item, index) => (
+      //     <div key={index}>{`${index + 1}. ${item}`}</div>  
+      //   ))}
+      // </div>
     ),
     intents: [
       <Button action="/stats" value={buttonValue}>Stats</Button>,
