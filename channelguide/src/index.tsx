@@ -62,12 +62,21 @@ app.frame('/trendingdata', async (c) => {
 
   return c.res({
     image: (
-      <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 30 }}>
-        <h2>Trending Channels: Top 10</h2>
-        {state.channels.map((item, index) => (
-          <div key={index}>{`${index + 1}. ${item}`}</div>  
-        ))}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0f0f0', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', width: '100%', height: '100%' }}>
+        <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 30, textAlign: 'center' }}>
+          <h2>Trending Channels: Top 10</h2>
+          {state.channels.map((item, index) => (
+            <div key={index}>{`${index + 1}. ${item}`}</div>  
+          ))}
+        </div>
       </div>
+
+      // <div style={{ color: 'black', display: 'flex', flexDirection: 'column', fontSize: 30 }}>
+      //   <h2>Trending Channels: Top 10</h2>
+      //   {state.channels.map((item, index) => (
+      //     <div key={index}>{`${index + 1}. ${item}`}</div>  
+      //   ))}
+      // </div>
     ),
     intents: [
       <TextInput placeholder="Enter the channel #" />,
